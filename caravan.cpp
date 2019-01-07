@@ -91,6 +91,7 @@ void add_pack_animal(Caravan caravan, PackAnimal animal)
       current->next = newNode;
       add_to_caravan(animal, caravan);
       caravan->length++;
+      
     }
   }
 
