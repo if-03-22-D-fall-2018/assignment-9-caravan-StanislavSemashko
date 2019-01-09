@@ -24,6 +24,7 @@ struct CaravanImplementation
 {
   int length;
   Node head;
+  Node last;
 };
 struct NodeImplementation
 {
@@ -37,6 +38,7 @@ Caravan new_caravan()
   Caravan new_caravan = (Caravan)malloc(sizeof(struct CaravanImplementation));
   new_caravan->length = 0;
   new_caravan->head = 0;
+  new_caravan->last = 0;
   return new_caravan;
 }
 
@@ -65,34 +67,51 @@ void add_pack_animal(Caravan caravan, PackAnimal animal)
     // {
     //         remove_pack_animal(get_caravan(animal), animal);
     // }
-
+    // current = caravan->head;
+    // Node newNode = (Node)malloc(sizeof(struct NodeImplementation));
+    // newNode->animal = animal;
+    // newNode->next = 0;
+    // if (caravan->head == 0)
+    // {
+    //   caravan->head = newNode;
+    //   add_to_caravan(animal, caravan);
+    //   caravan->length++;
+    // }
+    // else
+    // {
+    //   while (current->next != 0)
+    //   {
+    //     current = current->next;
+    //   }
+    //   current->next = newNode;
+    //   add_to_caravan(animal, caravan);
+    //   caravan->length++;
+    //
+    // }
     Node current = caravan->head;
     while (current!= 0)
     {
       if (current->animal == animal)return;
       current = current->next;
     }
-    current = caravan->head;
-    Node newNode = (Node)malloc(sizeof(struct NodeImplementation));
-    newNode->animal = animal;
-    newNode->next = 0;
+    Node new_node = (Node)malloc(sizeof(struct NodeImplementation));
+    new_node->animal = animal;
+    new_node->next = 0;
     if (caravan->head == 0)
     {
-      caravan->head = newNode;
-      add_to_caravan(animal, caravan);
+      caravan->head = new_node;
+      caravan->last = caravan->head;
       caravan->length++;
+      add_to_caravan(animal,caravan);
     }
     else
     {
-      while (current->next != 0)
-      {
-        current = current->next;
-      }
-      current->next = newNode;
-      add_to_caravan(animal, caravan);
+      caravan->last->next = new_node;
+      caravan->last = new_node;
       caravan->length++;
-      
+      add_to_caravan(animal,caravan);
     }
+
   }
 
 }
