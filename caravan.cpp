@@ -22,7 +22,7 @@ typedef struct NodeImplementation* Node;
 
 struct CaravanImplementation
 {
-  int length;
+  int len;
   Node head;
   Node last;
 };
@@ -30,68 +30,60 @@ struct NodeImplementation
 {
   PackAnimal animal;
   struct NodeImplementation* next;
+
 };
+
+
 
 
 Caravan new_caravan()
 {
   Caravan new_caravan = (Caravan)malloc(sizeof(struct CaravanImplementation));
-  new_caravan->length = 0;
+  new_caravan->len = 0;
   new_caravan->head = 0;
-  new_caravan->last = 0;
+  new_caravan-> last = 0;
   return new_caravan;
 }
 
+/**
+* @return Die Länge einer Karawane, d.h., die Anzahl der Tiere in der Karawane.
+*/
 int get_length(Caravan caravan)
 {
-  return caravan->length;
+  return caravan->len;
 }
 
+/**
+* Entfern alle Tiere aus einer Karawane und löscht die Karawane.
+*/
 void delete_caravan(Caravan caravan)
 {
   Node current = caravan->head;
-  while (current !=0)
+  while (current != 0)
   {
-    Node to_delate = current;
+    Node delate = current;
+    sfree(delate);
     current = current->next;
-    sfree(to_delate);
   }
   sfree(caravan);
+
 }
 
+/**
+* Fügt ein Packtier zu einer Karawane hinzu.
+*/
 void add_pack_animal(Caravan caravan, PackAnimal animal)
 {
   if (animal != 0)
   {
-    // if(get_caravan(animal) != 0 && get_caravan(animal) != caravan)
-    // {
-    //         remove_pack_animal(get_caravan(animal), animal);
-    // }
-    // current = caravan->head;
-    // Node newNode = (Node)malloc(sizeof(struct NodeImplementation));
-    // newNode->animal = animal;
-    // newNode->next = 0;
-    // if (caravan->head == 0)
-    // {
-    //   caravan->head = newNode;
-    //   add_to_caravan(animal, caravan);
-    //   caravan->length++;
-    // }
-    // else
-    // {
-    //   while (current->next != 0)
-    //   {
-    //     current = current->next;
-    //   }
-    //   current->next = newNode;
-    //   add_to_caravan(animal, caravan);
-    //   caravan->length++;
-    //
-    // }
-    Node current = caravan->head;
-    while (current!= 0)
+    if (get_caravan(animal) != 0 && get_caravan(animal) != caravan)
     {
-      if (current->animal == animal)return;
+      remove_pack_animal(get_caravan(animal),animal);
+    }
+    Node current = caravan->head;
+    while(current != 0)
+    {
+      if (current->animal == animal) return;
       current = current->next;
     }
     Node new_node = (Node)malloc(sizeof(struct NodeImplementation));
@@ -100,61 +92,97 @@ void add_pack_animal(Caravan caravan, PackAnimal animal)
     if (caravan->head == 0)
     {
       caravan->head = new_node;
-      caravan->last = caravan->head;
-      caravan->length++;
+      caravan->last = new_node;
+      caravan->len++;
       add_to_caravan(animal,caravan);
     }
     else
     {
       caravan->last->next = new_node;
       caravan->last = new_node;
-      caravan->length++;
+      caravan->len++;
       add_to_caravan(animal,caravan);
     }
-
   }
 
 }
 
+/**
+* Entfernt ein Packtier aus einer Karawane.
+*/
 void remove_pack_animal(Caravan caravan, PackAnimal animal)
 {
   if (animal != 0)
   {
+
     Node current = caravan->head;
-    if (current != 0 && current->animal == animal )
+    if (current != 0 && current->animal == animal)
     {
       caravan->head = current->next;
       sfree(current);
       remove_from_caravan(animal, caravan);
-      caravan->length--;
-      return;
+      caravan->len--;
     }
-    while (current->next != 0 && current->next->animal != animal)
+    else
     {
-      current = current->next;
+      while (current->next != 0 && current->next->animal != animal)
+      {
+        current = current->next;
+      }
+      if (current->next != 0)
+      {
+        Node to_free = current->next;
+            current->next = current->next->next;
+            sfree(to_free);
+            remove_from_caravan(animal, caravan);
+            caravan->len--;
+      }
+
     }
-    if (current->next != 0 )
-    {
-      current->next = current->next->next;
-      sfree(current->next);
-      remove_from_caravan(animal, caravan);
-    }
+
   }
 
 }
 
-int get_caravan_load(Caravan caravan)
+/**
+* @return Die Geschwindigkeit einer Karawane. Diese richtet sich nach der Geschwindigkeit des
+* langsamsten Tiers in der Karawane.
+*/
+int get_caravan_speed(Caravan caravan)
 {
-  int load = 0;
+  int speed = HORSE_MAX_SPEED;
   Node current = caravan->head;
   while (current != 0)
   {
-    load += get_load(current->animal);
+    if (get_actual_speed(current->animal) < speed)
+    {
+      speed = get_actual_speed(current->animal);
+    }
     current = current->next;
+
   }
-  return load;
+  return speed;
 }
 
+/**
+* @return Die Gesamtanzahl der Ballen einer Karawane.
+*/
+int get_caravan_load(Caravan caravan)
+{
+  int summ = 0;
+  Node current = caravan->head;
+  while (current != 0)
+  {
+    summ += get_load(current->animal);
+    current = current->next;
+  }
+  return summ;
+}
+
+/**
+* Entl&auml;dt die gesamte Karawane. D.h. es wird jedes Tier in der Karawane von seinen Ballen
+* befreit.
+*/
 void unload(Caravan caravan)
 {
   Node current = caravan->head;
@@ -165,20 +193,10 @@ void unload(Caravan caravan)
   }
 }
 
-int get_caravan_speed(Caravan caravan)
-{
-  int speed = HORSE_MAX_SPEED;
-  Node current = caravan->head;
-  while (current != 0)
-  {
-    if (get_actual_speed(current->animal)<speed)
-    {
-    speed = get_actual_speed(current->animal);
-    }
-    current = current->next;
-  }
-  return speed;
-}
+/**
+* Verteilt die Last der Ballen so auf die einzelnen Tiere, dass die Geschwindigkeit der Karawane
+* maximal ist.
+*/
 void optimize_load(Caravan caravan)
 {
 
